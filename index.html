@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CuidaConect — Prototipo Navegable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#1565A6;--primary-light:#3E88C4;--accent:#2E9E6B;--bg:#F4F9F8;--surface:#FFFFFF;--text:#1C2B33;--text-secondary:#5A6E76;--success:#2E9E6B;--warning:#D98C2B;--error:#C25450;--border:#DCE6EA;}
+*{box-sizing:border-box;}
+body{margin:0;background:#EAEFEF;color:var(--text);font-family:'Inter',sans-serif;}
+.phone{width:320px;border-radius:38px;background:#101820;padding:10px;box-shadow:0 20px 44px rgba(16,24,32,.22);}
+.phone-screen{background:var(--bg);border-radius:30px;overflow:hidden;height:640px;display:flex;flex-direction:column;position:relative;}
+.screen-body{flex:1;overflow-y:auto;padding:22px 18px 18px;}
+.screen-body::-webkit-scrollbar{display:none;}
+.statusbar{height:26px;}
+.t-display{font-family:'Fraunces',serif;font-weight:600;font-size:26px;line-height:1.2;}
+.t-h1{font-weight:700;font-size:21px;margin:0 0 4px;}
+.t-h2{font-weight:600;font-size:17px;margin:0 0 4px;}
+.t-body{font-size:15px;line-height:1.5;}
+.t-sec{font-size:13px;color:var(--text-secondary);}
+.t-data{font-family:'IBM Plex Mono',monospace;font-size:13.5px;}
+.btn{font-family:'Inter';font-weight:600;font-size:14.5px;padding:13px 20px;border-radius:13px;border:none;cursor:pointer;width:100%;text-align:center;display:block;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-accent{background:var(--accent);color:#fff;}
+.btn-secondary{background:#fff;color:var(--primary);border:1.5px solid var(--primary);}
+.btn-ghost{background:transparent;color:var(--text-secondary);text-decoration:underline;padding:8px;}
+.btn + .btn{margin-top:10px;}
+.role-card{border:1.5px solid var(--border);border-radius:16px;padding:16px;display:flex;gap:12px;align-items:center;margin-bottom:12px;cursor:pointer;background:#fff;}
+.role-emoji{font-size:26px;width:42px;height:42px;background:#E5F1F8;border-radius:12px;display:flex;align-items:center;justify-content:center;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px;}
+.field input{width:100%;font-family:'IBM Plex Mono',monospace;font-size:14px;padding:11px 12px;border-radius:11px;border:1.5px solid var(--border);background:#fff;outline:none;}
+.upload-row{display:flex;align-items:center;justify-content:space-between;border:1.5px dashed var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;background:#fff;}
+.chip{font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;}
+.chip-ok{background:#E1F3EA;color:var(--success);}
+.chip-pending{background:#FBEEDC;color:var(--warning);}
+.otp-row{display:flex;gap:8px;margin:18px 0;}
+.otp-box{width:42px;height:52px;border:1.5px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono';font-size:20px;background:#fff;}
+.otp-box.filled{border-color:var(--primary);color:var(--primary);font-weight:700;}
+.match-card{border-radius:20px;background:#fff;box-shadow:0 6px 18px rgba(28,43,51,.08);overflow:hidden;}
+.match-photo{height:190px;background:linear-gradient(135deg,#DCEAF2,#D3EFE2);display:flex;align-items:center;justify-content:center;position:relative;font-family:'Fraunces',serif;font-size:38px;color:var(--primary);font-weight:600;}
+.ring{width:60px;height:60px;border-radius:50%;position:absolute;bottom:-26px;left:16px;display:flex;align-items:center;justify-content:center;}
+.ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg);}
+.ring-avatar{width:48px;height:48px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;color:var(--primary);font-size:15px;}
+.match-info{padding:36px 16px 14px;}
+.match-tags{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0 4px;}
+.tag{background:#E5F1F8;color:var(--primary);font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:100px;}
+.match-actions{display:flex;justify-content:center;gap:20px;padding:14px 0 18px;}
+.round-btn{width:50px;height:50px;border-radius:50%;border:none;font-size:19px;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.10);}
+.round-btn.reject{background:#fff;color:var(--error);border:1.5px solid var(--border);}
+.round-btn.accept{background:var(--success);color:#fff;}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:100px;margin:0 6px 6px 0;}
+.badge-ok{background:#E1F3EA;color:var(--success);}
+.badge-pending{background:#FBEEDC;color:var(--warning);}
+.badge-health{background:#DDEBF6;color:var(--primary);}
+.list-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.list-row:last-child{border-bottom:none;}
+.avatar-sm{width:42px;height:42px;border-radius:50%;background:#DCEAF2;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;color:var(--primary);font-weight:600;font-size:14px;flex-shrink:0;}
+.list-title{font-size:14px;font-weight:600;margin:0;}
+.list-sub{font-size:12.5px;color:var(--text-secondary);margin:2px 0 0;}
+.bubble{max-width:78%;padding:10px 13px;border-radius:16px;font-size:13.5px;margin-bottom:8px;line-height:1.4;}
+.bubble-them{background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;}
+.bubble-me{background:var(--primary);color:#fff;margin-left:auto;border-bottom-right-radius:4px;}
+.agenda-card{border:1.5px solid var(--border);border-radius:14px;padding:14px;background:#fff;margin-bottom:10px;}
+.agenda-date{background:#E5F1F8;color:var(--primary);font-weight:700;font-size:11px;padding:4px 9px;border-radius:100px;display:inline-block;margin-bottom:8px;}
+.course-card{border:1.5px solid var(--border);border-radius:14px;padding:13px;background:#fff;margin-bottom:10px;display:flex;gap:12px;align-items:center;}
+.course-icon{width:40px;height:40px;border-radius:10px;background:#E1F3EA;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.progress-bar{height:6px;background:var(--border);border-radius:6px;margin-top:6px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);}
+.stars{font-size:26px;color:#E3E9EB;letter-spacing:4px;margin:14px 0;}
+.stars span{color:var(--warning);}
+.screen-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.back-btn{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;}
+.bottom-nav{display:flex;justify-content:space-around;padding:10px 4px 12px;background:#fff;border-top:1px solid var(--border);}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9.5px;font-weight:600;color:var(--text-secondary);cursor:pointer;background:none;border:none;}
+.nav-item.active{color:var(--primary);}
+.nav-icon{font-size:17px;}
+.top-app-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 0;}
+.icon-btn{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;}
+.menu-overlay{position:absolute;inset:0;background:rgba(16,24,32,.35);display:flex;align-items:flex-end;z-index:10;}
+.menu-sheet{background:#fff;width:100%;border-radius:20px 20px 0 0;padding:18px;}
+.menu-item{display:flex;align-items:center;gap:12px;padding:12px 4px;font-size:14px;font-weight:600;border-bottom:1px solid var(--border);cursor:pointer;}
+.menu-item:last-child{border-bottom:none;color:var(--error);}
+.empty-state{text-align:center;padding:60px 10px;}
+.empty-emoji{font-size:44px;margin-bottom:12px;}
+
+  /* ---- Top bar ---- */
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;}
+  .topbar h1{font-family:'Fraunces',serif;font-weight:600;font-size:20px;margin:0;color:var(--primary);}
+  .topbar p{margin:2px 0 0;font-size:12.5px;color:var(--text-secondary);}
+  .reset-btn{font-family:'Inter';font-weight:600;font-size:13px;color:var(--primary);background:#E5F1F8;border:none;padding:9px 16px;border-radius:100px;cursor:pointer;}
+  /* ---- Layout ---- */
+  .stage{display:flex;justify-content:center;padding:44px 20px 0;}
+  .role-card:hover{border-color:var(--primary-light);}
+  .field input:focus{border-color:var(--primary-light);}
+  /* thumbnail rail */
+  .rail-wrap{margin-top:56px;padding:28px 24px 60px;background:var(--surface);border-top:1px solid var(--border);}
+  .rail-group{max-width:1180px;margin:0 auto 26px;}
+  .rail-group h3{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--primary);font-weight:700;margin:0 0 12px;}
+  .rail-items{display:flex;flex-wrap:wrap;gap:10px;}
+  .rail-item{font-size:12.5px;font-weight:600;padding:9px 14px;border-radius:100px;background:#F4F9F8;border:1.5px solid var(--border);cursor:pointer;color:var(--text);}
+  .rail-item.current{background:var(--primary);color:#fff;border-color:var(--primary);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>CuidaConect — Prototipo</h1>
+    <p id="crumb">Pantalla actual: Selección de perfil</p>
+  </div>
+  <button class="reset-btn" onclick="goto('role-select')">⟲ Reiniciar flujo</button>
+</div>
+
+<div class="stage">
+  <div class="phone">
+    <div class="phone-screen" id="phoneScreen"></div>
+  </div>
+</div>
+
+<div class="rail-wrap">
+  <div class="rail-group"><h3>Módulo 1 — Registro e inicio de sesión</h3><div class="rail-items" id="rail-1"></div></div>
+  <div class="rail-group"><h3>Módulo 2 — Matching</h3><div class="rail-items" id="rail-2"></div></div>
+  <div class="rail-group"><h3>Módulo 3 — Perfiles</h3><div class="rail-items" id="rail-3"></div></div>
+  <div class="rail-group"><h3>Módulo 4 — Navegación, chat, agenda y cierre</h3><div class="rail-items" id="rail-4"></div></div>
+</div>
+
+<script>
+const ring = (pct, size=60) => {
+  const r = (size/2)-6, c = 2*Math.PI*r, off = c - (c*pct/100);
+  return `<div class="ring" style="width:${size}px;height:${size}px;">
+    <svg width="${size}" height="${size}">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#DCE6EA" stroke-width="5"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#2E9E6B" stroke-width="5" stroke-dasharray="${c}" stroke-dashoffset="${off}" stroke-linecap="round"/>
+    </svg>
+    <div class="ring-avatar" style="width:${size-14}px;height:${size-14}px;">VT</div>
+  </div>`;
+};
+const bottomNav = (active) => `
+  <div class="bottom-nav">
+    <button class="nav-item ${active==='matching-feed'?'active':''}" onclick="goto('matching-feed')"><span class="nav-icon">♡</span>Matching</button>
+    <button class="nav-item ${active==='agenda'?'active':''}" onclick="goto('agenda')"><span class="nav-icon">📅</span>Agenda</button>
+    <button class="nav-item ${active==='training'?'active':''}" onclick="goto('training')"><span class="nav-icon">🎓</span>Formación</button>
+    <button class="nav-item ${active==='chat-list'?'active':''}" onclick="goto('chat-list')"><span class="nav-icon">💬</span>Chats</button>
+  </div>`;
+const topAppBar = (screenId) => `
+  <div class="top-app-bar">
+    <span class="t-h2" style="font-family:'Fraunces',serif;color:var(--primary);">CuidaConect</span>
+    <div class="icon-btn" onclick="openMenu('${screenId}')">☰</div>
+  </div>`;
+const screens = {
+'role-select': { crumb:'Selección de perfil', body:`
+    <div class="t-display" style="margin-bottom:6px;">Únete a CuidaConect</div>
+    <p class="t-sec" style="margin-bottom:22px;">Selecciona tu perfil para iniciar el registro</p>
+    <div class="role-card" onclick="goto('register-family')">
+      <div class="role-emoji">🏠</div>
+      <div><div class="t-h2">Busco cuidador</div><div class="t-sec">Perfil Demandante / Familiar</div></div>
+    </div>
+    <div class="role-card" onclick="goto('register-caregiver')">
+      <div class="role-emoji">🩺</div>
+      <div><div class="t-h2">Ofrezco cuidado</div><div class="t-sec">Perfil Técnico / Oferente</div></div>
+    </div>
+    <p class="t-sec" style="text-align:center;margin-top:26px;">¿Ya tienes cuenta? <a href="#" onclick="goto('login');return false;" style="color:var(--primary);font-weight:600;">Inicia sesión</a></p>`},
+'register-family': { crumb:'Registro · Familia', body:`
+    <div class="screen-header"><div class="back-btn" onclick="goto('role-select')">←</div><div class="t-h1">Cuéntanos de tu familiar</div></div>
+    <div class="field"><label>Nombre del paciente</label><input value="Ignacio Cortés"></div>
+    <div class="field"><label>Diagnóstico / condición</label><input value="Demencia senil, dependencia alta"></div>
+    <div class="field"><label>Comuna</label><input value="Peñalolén, Santiago"></div>
+    <div class="field"><label>Presupuesto sugerido / día</label><input value="$60.000 CLP"></div>
+    <button class="btn btn-primary" onclick="goto('upload-docs')">Siguiente</button>`},
+'register-caregiver': { crumb:'Registro · Cuidador', body:`
+    <div class="screen-header"><div class="back-btn" onclick="goto('role-select')">←</div><div class="t-h1">Cuéntanos sobre ti</div></div>
+    <div class="field"><label>Nombre completo</label><input value="Valeria Tapia"></div>
+    <div class="field"><label>RUT</label><input value="12.345.678-9"></div>
+    <div class="field"><label>Formación</label><input value="TENS especializada"></div>
+    <div class="field"><label>Tarifa hora / experiencia</label><input value="$5.000 CLP · 5 años"></div>
+    <button class="btn btn-primary" onclick="goto('upload-docs')">Siguiente</button>`},
+'upload-docs': { crumb:'Carga de documentos', body:`
+    <div class="screen-header"><div class="back-btn" onclick="goto('role-select')">←</div><div class="t-h1">Verifica tu identidad</div></div>
+    <p class="t-sec" style="margin-bottom:16px;">Estos documentos se revisan antes de activar tu Anillo de Confianza.</p>
+    <div class="upload-row"><span class="t-body">📄 Cédula de identidad</span><span class="chip chip-ok">Verificado</span></div>
+    <div class="upload-row"><span class="t-body">🎓 Certificado TENS</span><span class="chip chip-pending">En revisión</span></div>
+    <div class="upload-row"><span class="t-body">🩹 Curso primeros auxilios</span><span class="chip chip-pending">Pendiente</span></div>
+    <button class="btn btn-primary" style="margin-top:16px;" onclick="goto('login')">Finalizar registro</button>`},
+'login': { crumb:'Inicio de sesión', body:`
+    <div class="t-display" style="margin:10px 0 4px;">¡Hola de nuevo!</div>
+    <p class="t-sec" style="margin-bottom:20px;">Ingresa tus credenciales de acceso</p>
+    <div class="field"><label>RUT</label><input value="12.345.678-9"></div>
+    <div class="field"><label>Contraseña</label><input type="password" value="••••••••"></div>
+    <p class="t-sec" style="margin-bottom:18px;"><a href="#" style="color:var(--primary);">¿Olvidaste tu clave?</a></p>
+    <button class="btn btn-primary" onclick="goto('mfa')">Ingresar</button>`},
+'mfa': { crumb:'Verificación MFA', body:`
+    <div class="t-h1" style="margin-top:10px;">Verifica tu identidad</div>
+    <p class="t-sec">Enviamos un código de 4 dígitos a tu correo por seguridad</p>
+    <div class="otp-row"><div class="otp-box filled">4</div><div class="otp-box filled">2</div><div class="otp-box filled">1</div><div class="otp-box filled">7</div></div>
+    <button class="btn btn-primary" onclick="goto('matching-feed')">Verificar</button>`},
+'matching-feed': { crumb:'Feed de Matching', nav:'matching-feed', body:`
+    ${topAppBar('matching-feed')}
+    <div class="screen-body" style="padding-top:14px;">
+      <div class="match-card">
+        <div class="match-photo">VT ${ring(75)}</div>
+        <div class="match-info">
+          <div class="t-h2">Valeria T.</div>
+          <div class="t-sec">A 1.2 km · TENS especializada</div>
+          <div class="match-tags"><span class="tag">Alzheimer</span><span class="tag">Cuidados paliativos</span><span class="tag">Curación de escaras</span></div>
+        </div>
+        <div class="match-actions">
+          <button class="round-btn reject" onclick="goto('matching-empty')">✕</button>
+          <button class="round-btn accept" onclick="goto('match-success')">✓</button>
+        </div>
+      </div>
+    </div>`},
+'matching-empty': { crumb:'Feed de Matching · vacío', nav:'matching-feed', body:`
+    ${topAppBar('matching-feed')}
+    <div class="screen-body"><div class="empty-state">
+      <div class="empty-emoji">🔍</div><div class="t-h2">No hay más perfiles cerca</div>
+      <p class="t-sec">Prueba ampliando tu radio de búsqueda</p>
+      <button class="btn btn-secondary" style="margin-top:18px;" onclick="goto('matching-feed')">Ampliar radio a 5 km</button>
+    </div></div>`},
+'match-success': { crumb:'¡Es un match!', body:`
+    <div style="text-align:center;padding-top:50px;">
+      <div style="font-size:52px;">🎉</div>
+      <div class="t-display" style="color:var(--accent);margin:10px 0 6px;">¡Es un match!</div>
+      <p class="t-sec" style="margin-bottom:24px;">Tú y Valeria T. pueden empezar a coordinar</p>
+      <div style="display:flex;justify-content:center;">${ring(75,88).replace('style="width:','style="position:relative;bottom:auto;left:auto;width:')}</div>
+      <div style="height:34px;"></div>
+      <button class="btn btn-accent" onclick="goto('profile-caregiver')">Ver perfil completo</button>
+      <button class="btn btn-ghost" onclick="goto('chat-conversation')">Enviar mensaje directo</button>
+    </div>`},
+'profile-caregiver': { crumb:'Perfil · Cuidador', body:`
+    <div class="screen-header"><div class="back-btn" onclick="goto('matching-feed')">←</div><div class="t-h1">Perfil</div></div>
+    <div style="display:flex;justify-content:center;margin-bottom:10px;">${ring(75,84).replace('style="width:','style="position:relative;bottom:auto;left:auto;width:')}</div>
+    <div style="text-align:center;">
+      <div class="t-h2">Valeria Tapia, 28</div>
+      <div class="t-sec">TENS especializada · 5 años de experiencia</div>
+      <div class="t-data" style="margin-top:4px;">$5.000 CLP / hora</div>
+    </div>
+    <div style="margin:16px 0;">
+      <span class="badge badge-ok">✓ Identidad OK</span><span class="badge badge-ok">✓ Certificados</span><span class="badge badge-pending">⏳ Curso primeros aux.</span>
+    </div>
+    <div class="t-h2" style="margin-top:6px;">Sobre mí</div>
+    <p class="t-body" style="color:var(--text-secondary);">Especialista en pacientes con Alzheimer, cuidados paliativos y curación de escaras. Disponible turnos diurnos.</p>
+    <button class="btn btn-accent" onclick="goto('chat-conversation')">Coordinar servicio</button>`},
+'profile-family': { crumb:'Perfil · Familia / Paciente', body:`
+    <div class="screen-header"><div class="back-btn" onclick="goto('matching-feed')">←</div><div class="t-h1">Ficha del paciente</div></div>
+    <div class="badge badge-health">🩺 Datos protegidos por Ley 21.719 y 19.628</div>
+    <div style="margin-top:14px;"><div class="t-h2">Familia Cortés P.</div><div class="t-sec">Tutor: Cecilia Cortés · Paciente: Ignacio Cortés</div></div>
+    <div class="field" style="margin-top:14px;"><label>Diagnóstico clínico</label><div class="t-body">Masculino (86 años), demencia senil avanzada, dependencia funcional alta</div></div>
+    <div class="field"><label>Ubicación</label><div class="t-body">Peñalolén, Santiago</div></div>
+    <div class="field"><label>Rango horario</label><div class="t-body">Turnos día (8:00–18:00 hrs)</div></div>
+    <div class="field"><label>Presupuesto sugerido</label><div class="t-data">$60.000 CLP/día</div></div>
+    <button class="btn btn-primary" onclick="goto('chat-conversation')">Contactar familia</button>`},
+'chat-list': { crumb:'Lista de chats', nav:'chat-list', body:`
+    ${topAppBar('chat-list')}
+    <div class="screen-body">
+      <div class="t-h1">Chats</div>
+      <div class="list-row" onclick="goto('chat-conversation')"><div class="avatar-sm">CC</div><div style="flex:1;"><p class="list-title">Cecilia Cortés</p><p class="list-sub">Sí, el jueves en la tarde nos acomoda</p></div><span class="t-sec">14:02</span></div>
+      <div class="list-row" onclick="goto('chat-conversation')"><div class="avatar-sm">MJ</div><div style="flex:1;"><p class="list-title">Marisol Jara</p><p class="list-sub">Gracias por el cuidado de ayer 🙏</p></div><span class="t-sec">Ayer</span></div>
+      <div class="list-row" onclick="goto('chat-conversation')"><div class="avatar-sm">RP</div><div style="flex:1;"><p class="list-title">Roberto Pinto</p><p class="list-sub">¿Podríamos coordinar para el sábado?</p></div><span class="t-sec">Lunes</span></div>
+    </div>
+    ${bottomNav('chat-list')}`},
+'chat-conversation': { crumb:'Conversación', body:`
+    <div class="screen-header"><div class="back-btn" onclick="goto('chat-list')">←</div><div class="t-h2">Cecilia Cortés</div></div>
+    <div class="bubble bubble-them">Hola Valeria, vimos tu perfil y calza perfecto con lo que necesitamos para mi papá 🙏</div>
+    <div class="bubble bubble-me">¡Hola! Encantada. ¿Podemos coordinar una videollamada esta semana?</div>
+    <div class="bubble bubble-them">Sí, el jueves en la tarde nos acomoda</div>
+    <div style="margin-top:20px;"><button class="btn btn-accent" onclick="goto('agenda')">Agendar turno</button></div>`},
+'agenda': { crumb:'Agenda / turnos', nav:'agenda', body:`
+    ${topAppBar('agenda')}
+    <div class="screen-body">
+      <div class="t-h1">Mi agenda</div>
+      <div class="agenda-card"><div class="agenda-date">Jue 16 Jul · 15:00</div><div class="t-h2">Familia Cortés P.</div><div class="t-sec">Peñalolén · Turno confirmado</div>
+        <button class="btn btn-secondary" style="margin-top:10px;" onclick="goto('evaluation')">Marcar como completado</button></div>
+      <div class="agenda-card"><div class="agenda-date">Sáb 18 Jul · 09:00</div><div class="t-h2">Familia Jara</div><div class="t-sec">Ñuñoa · Pendiente de confirmación</div></div>
+    </div>
+    ${bottomNav('agenda')}`},
+'training': { crumb:'Capacitación continua', nav:'training', body:`
+    ${topAppBar('training')}
+    <div class="screen-body">
+      <div class="t-h1">Formación</div>
+      <p class="t-sec" style="margin-bottom:14px;">Cursos que fortalecen tu Anillo de Confianza</p>
+      <div class="course-card"><div class="course-icon">🩹</div><div style="flex:1;"><div class="t-h2" style="font-size:14px;">Primeros auxilios domiciliarios</div><div class="progress-bar"><div class="progress-fill" style="width:60%;"></div></div></div></div>
+      <div class="course-card"><div class="course-icon">🧠</div><div style="flex:1;"><div class="t-h2" style="font-size:14px;">Manejo de demencia y Alzheimer</div><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--success);"></div></div></div><span class="badge badge-ok">✓</span></div>
+      <div class="course-card"><div class="course-icon">🛏️</div><div style="flex:1;"><div class="t-h2" style="font-size:14px;">Movilización segura de pacientes</div><div class="progress-bar"><div class="progress-fill" style="width:15%;"></div></div></div></div>
+    </div>
+    ${bottomNav('training')}`},
+'evaluation': { crumb:'Evaluación post-servicio', body:`
+    <div style="text-align:center;padding-top:40px;">
+      <div class="t-h1">¿Cómo fue el servicio?</div>
+      <p class="t-sec">Familia Cortés P. · Jue 16 Jul</p>
+      <div class="stars"><span>★★★★</span>★</div>
+      <div class="field" style="text-align:left;"><label>Comentario (opcional)</label><input value="Muy puntual y cariñosa con mi papá"></div>
+      <button class="btn btn-accent" onclick="goto('matching-feed')">Enviar evaluación</button>
+    </div>`}
+};
+function openMenu(returnTo){
+  const overlay = `
+    <div class="menu-overlay" onclick="if(event.target===this) closeMenu()">
+      <div class="menu-sheet">
+        <div class="menu-item">👤 Mi cuenta</div>
+        <div class="menu-item">🔒 Privacidad</div>
+        <div class="menu-item">🛟 Soporte</div>
+        <div class="menu-item">❓ Preguntas frecuentes</div>
+        <div class="menu-item">♿ Accesibilidad</div>
+        <div class="menu-item" onclick="closeMenu();goto('role-select')">🚪 Cerrar sesión</div>
+      </div>
+    </div>`;
+  document.getElementById('phoneScreen').insertAdjacentHTML('beforeend', overlay);
+}
+function closeMenu(){
+  const el = document.querySelector('.menu-overlay');
+  if(el) el.remove();
+}
+
+function goto(id){
+  const s = screens[id];
+  const el = document.getElementById('phoneScreen');
+  const wrapped = s.nav
+    ? `<div class="statusbar"></div>${s.body}`
+    : `<div class="statusbar"></div><div class="screen-body">${s.body}</div>`;
+  el.innerHTML = wrapped;
+  document.getElementById('crumb').textContent = 'Pantalla actual: ' + s.crumb;
+  document.querySelectorAll('.rail-item').forEach(b=>b.classList.toggle('current', b.dataset.id===id));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+const groups = {
+  1:['role-select','register-family','register-caregiver','upload-docs','login','mfa'],
+  2:['matching-feed','match-success','matching-empty'],
+  3:['profile-caregiver','profile-family'],
+  4:['chat-list','chat-conversation','agenda','training','evaluation']
+};
+const labels = {
+  'role-select':'Selección de perfil','register-family':'Registro Familia','register-caregiver':'Registro Cuidador',
+  'upload-docs':'Carga documentos','login':'Login','mfa':'Verificación MFA',
+  'matching-feed':'Feed matching','match-success':'¡Es un match!','matching-empty':'Estado vacío',
+  'profile-caregiver':'Perfil cuidador','profile-family':'Perfil familia',
+  'chat-list':'Lista de chats','chat-conversation':'Conversación','agenda':'Agenda','training':'Capacitación','evaluation':'Evaluación'
+};
+for(const g in groups){
+  const rail = document.getElementById('rail-'+g);
+  groups[g].forEach(id=>{
+    const b = document.createElement('button');
+    b.className='rail-item';
+    b.dataset.id=id;
+    b.textContent=labels[id];
+    b.onclick=()=>goto(id);
+    rail.appendChild(b);
+  });
+}
+
+goto('role-select');
+</script>
+</body>
+</html>
