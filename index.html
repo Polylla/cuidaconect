@@ -63,6 +63,11 @@ body{margin:0;background:#EAEFEF;color:var(--text);font-family:'Inter',sans-seri
 .bubble{max-width:78%;padding:10px 13px;border-radius:16px;font-size:13.5px;margin-bottom:8px;line-height:1.4;}
 .bubble-them{background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;}
 .bubble-me{background:var(--primary);color:#fff;margin-left:auto;border-bottom-right-radius:4px;}
+.chat-composer{display:flex;gap:8px;align-items:center;padding:10px 12px calc(12px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--border);flex-shrink:0;}
+.chat-composer input{flex:1;min-width:0;border:1.5px solid var(--border);border-radius:22px;padding:11px 14px;font:14px Inter,sans-serif;outline:none;background:#F8FBFB;}
+.chat-composer input:focus{border-color:var(--primary-light);}
+.chat-composer button{border:0;border-radius:22px;background:var(--primary);color:#fff;font:600 13px Inter,sans-serif;padding:11px 15px;cursor:pointer;}
+
 .agenda-card{border:1.5px solid var(--border);border-radius:14px;padding:14px;background:#fff;margin-bottom:10px;}
 .agenda-date{background:#E5F1F8;color:var(--primary);font-weight:700;font-size:11px;padding:4px 9px;border-radius:100px;display:inline-block;margin-bottom:8px;}
 .course-card{border:1.5px solid var(--border);border-radius:14px;padding:13px;background:#fff;margin-bottom:10px;display:flex;gap:12px;align-items:center;}
@@ -102,6 +107,21 @@ body{margin:0;background:#EAEFEF;color:var(--text);font-family:'Inter',sans-seri
   .rail-items{display:flex;flex-wrap:wrap;gap:10px;}
   .rail-item{font-size:12.5px;font-weight:600;padding:9px 14px;border-radius:100px;background:#F4F9F8;border:1.5px solid var(--border);cursor:pointer;color:var(--text);}
   .rail-item.current{background:var(--primary);color:#fff;border-color:var(--primary);}
+
+/* Matching diferenciado y tarjetas con interacción tipo swipe */
+.matching-intro{margin:4px 0 14px}.matching-counter{display:flex;justify-content:space-between;align-items:center;margin:10px 0;color:var(--text-secondary);font-size:12px}.matching-progress{height:5px;background:var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px}.matching-progress span{display:block;height:100%;background:var(--accent);transition:width .2s}.matching-card{background:#fff;border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 6px 18px rgba(28,43,51,.08);touch-action:pan-y;user-select:none;transition:transform .16s,opacity .16s}.matching-card.swipe-left{transform:translateX(-90px) rotate(-8deg);opacity:.35}.matching-card.swipe-right{transform:translateX(90px) rotate(8deg);opacity:.35}.matching-visual{height:145px;background:linear-gradient(135deg,#DCEAF2,#D3EFE2);display:flex;align-items:center;justify-content:center}.matching-initials{width:82px;height:82px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--primary);font:600 26px 'Fraunces',serif;border:4px solid rgba(255,255,255,.7)}.matching-details{padding:15px 16px 12px}.matching-meta{font-size:12px;color:var(--text-secondary);line-height:1.5;margin-top:5px}.matching-label{display:inline-block;background:#E5F1F8;color:var(--primary);border-radius:100px;padding:4px 9px;font-size:10.5px;font-weight:700;margin:3px 3px 0 0}.matching-actions{display:flex;align-items:center;justify-content:center;gap:25px;padding:14px 0 4px}.matching-actions .round-btn{width:54px;height:54px;font-size:22px}.matching-hint{text-align:center;font-size:11px;color:var(--text-secondary);margin:9px 0 2px}.matching-empty{text-align:center;padding:38px 12px}
+
+
+/* Pantalla transitoria de búsqueda simulada (solo al completar MFA). */
+.match-search-wait{min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:30px 20px;gap:13px;box-sizing:border-box}
+.match-search-icon{position:relative;width:108px;height:108px;display:flex;align-items:center;justify-content:center;background:#e1f3ea;border-radius:50%;font-size:58px;animation:match-search-pulse 1.2s ease-in-out infinite alternate}
+.match-search-lens{position:absolute;right:-6px;bottom:-3px;font-size:36px;filter:drop-shadow(0 2px 2px #fff)}
+.match-search-dots{display:flex;gap:7px;margin-top:5px}
+.match-search-dots span{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:match-search-bounce .9s ease-in-out infinite alternate}
+.match-search-dots span:nth-child(2){animation-delay:.18s}.match-search-dots span:nth-child(3){animation-delay:.36s}
+@keyframes match-search-pulse{from{transform:scale(.96)}to{transform:scale(1.05)}}
+@keyframes match-search-bounce{from{opacity:.35;transform:translateY(0)}to{opacity:1;transform:translateY(-6px)}}
+@media(prefers-reduced-motion:reduce){.match-search-icon,.match-search-dots span{animation:none}}
 </style>
 </head>
 <body>
@@ -111,7 +131,7 @@ body{margin:0;background:#EAEFEF;color:var(--text);font-family:'Inter',sans-seri
     <h1>CuidaConect — Prototipo</h1>
     <p id="crumb">Pantalla actual: Selección de perfil</p>
   </div>
-  <button class="reset-btn" onclick="goto('role-select')">⟲ Reiniciar flujo</button>
+  <button class="reset-btn" onclick="currentRole='family';matchingIndex=0;goto('role-select')">⟲ Reiniciar flujo</button>
 </div>
 
 <div class="stage">
@@ -150,33 +170,410 @@ const topAppBar = (screenId) => `
     <span class="t-h2" style="font-family:'Fraunces',serif;color:var(--primary);">CuidaConect</span>
     <div class="icon-btn" onclick="openMenu('${screenId}')">☰</div>
   </div>`;
+
+let currentRole = 'family'; // family: demandante; caregiver: oferente
+let matchingIndex = 0;
+let swipeStartX = null;
+const matchingProfiles = {
+ family:[
+  {name:'Valeria Tapia',initials:'VT',subtitle:'TENS · 5 años de experiencia',distance:'A 1,2 km',rate:'$5.000 CLP / hora',tags:['Primeros auxilios','Movilización','Turnos diurnos'],about:'Experiencia en acompañamiento y apoyo en actividades de la vida diaria. Disponibilidad de lunes a viernes.'},
+  {name:'Camila Rojas',initials:'CR',subtitle:'Cuidadora con experiencia',distance:'A 2,4 km',rate:'$4.500 CLP / hora',tags:['Acompañamiento','Alimentación','Compañía'],about:'Experiencia en cuidado domiciliario y acompañamiento de personas mayores.'},
+  {name:'Daniela Muñoz',initials:'DM',subtitle:'Técnico en enfermería',distance:'A 3,1 km',rate:'$5.500 CLP / hora',tags:['Apoyo cotidiano','Movilización','Turnos flexibles'],about:'Formación técnica y experiencia en apoyo cotidiano a personas mayores.'},
+  {name:'Paula Herrera',initials:'PH',subtitle:'Cuidadora con formación',distance:'A 3,8 km',rate:'$4.800 CLP / hora',tags:['Estimulación cognitiva','Acompañamiento','Turno diurno'],about:'Experiencia en acompañamiento, actividades recreativas y apoyo en rutinas diarias.'},
+  {name:'Fernanda Soto',initials:'FS',subtitle:'Estudiante del área de salud',distance:'A 4,5 km',rate:'$4.000 CLP / hora',tags:['Acompañamiento','Apoyo cotidiano','Media jornada'],about:'Experiencia de apoyo familiar y disponibilidad para turnos de media jornada.'}
+ ],
+ caregiver:[
+  {name:'Ignacio Cortés',initials:'IC',contactName:'Cecilia Cortés',contactRelation:'Hija',subtitle:'86 años · Peñalolén',location:'Peñalolén',needs:'Acompañamiento diario y apoyo para movilizarse dentro del hogar.',schedule:'Lunes a viernes, 8:00–18:00',distance:'A 1,2 km',rate:'Turno diurno · 8:00–18:00',tags:['Acompañamiento','Actividades diarias','Movilidad reducida'],about:'Ignacio requiere compañía y apoyo para desplazarse de forma asistida dentro de su domicilio.'},
+  {name:'Elena Muñoz',initials:'EM',contactName:'Javier Muñoz',contactRelation:'Hijo',subtitle:'79 años · Ñuñoa',location:'Ñuñoa',needs:'Compañía, preparación de alimentos y acompañamiento en paseos breves.',schedule:'Lunes a viernes, 8:00–13:00',distance:'A 2,4 km',rate:'Media jornada · Mañana',tags:['Compañía','Preparación de alimentos','Paseos'],about:'Elena necesita compañía durante las mañanas, apoyo para preparar alimentos y acompañamiento en paseos.'},
+  {name:'Rosa González',initials:'RG',contactName:'Andrea González',contactRelation:'Hija',subtitle:'83 años · Macul',location:'Macul',needs:'Apoyo para movilización asistida y actividades cotidianas en el hogar.',schedule:'Lunes, miércoles y viernes, 9:00–17:00',distance:'A 3,1 km',rate:'Tres días a la semana · 9:00–17:00',tags:['Apoyo cotidiano','Movilización asistida','Acompañamiento'],about:'Rosa requiere apoyo para movilizarse de manera asistida y realizar actividades cotidianas en su domicilio.'},
+  {name:'Arturo Pérez',initials:'AP',contactName:'Marcela Pérez',contactRelation:'Hija',subtitle:'75 años · La Reina',location:'La Reina',needs:'Acompañamiento y apoyo con alimentación y organización de rutinas.',schedule:'Lunes a viernes, 14:00–18:00',distance:'A 3,8 km',rate:'Turno parcial · Tarde',tags:['Acompañamiento','Alimentación','Rutinas'],about:'Arturo busca acompañamiento por las tardes y apoyo para mantener sus rutinas y horarios de alimentación.'},
+  {name:'Marta Silva',initials:'MS',contactName:'Patricia Silva',contactRelation:'Hija',subtitle:'88 años · Peñalolén',location:'Peñalolén',needs:'Compañía, apoyo en el hogar y ayuda en actividades diarias.',schedule:'Martes a sábado, 10:00–16:00',distance:'A 4,5 km',rate:'Martes a sábado · 10:00–16:00',tags:['Compañía','Apoyo en el hogar','Actividades diarias'],about:'Marta necesita compañía y apoyo general en el hogar durante seis horas al día.'}
+ ]
+};
+function selectRole(role){currentRole=role;matchingIndex=0;goto(role==='family'?'register-family':'register-caregiver');}
+
+// Conversaciones ficticias diferenciadas. Los mensajes y las vistas previas
+// comparten una misma fuente de datos para evitar que se contradigan.
+let activeChatIndex = 0;
+let activeChatMode = 'list';
+let activeMatchedChatMessages = [];
+const chatExamples = [
+ {familyName:'Cecilia Cortés', senior:'Ignacio Cortés', caregiver:'Valeria Tapia', time:'14:02',
+  messages:[['them','Hola, soy Cecilia, hija de Ignacio. Estamos buscando apoyo durante las mañanas.'],['me','¡Hola Cecilia! Gracias por contactarme. ¿Qué tareas necesitan cubrir?'],['them','Principalmente acompañamiento y apoyo para movilizarse dentro de casa.'],['me','Perfecto. Podemos conversar sobre los horarios disponibles.'],['them','¿Podrías venir el jueves por la mañana?']]},
+ {familyName:'Marisol Jara', senior:'Elena Muñoz', caregiver:'Camila Rojas', time:'Ayer',
+  messages:[['them','Hola, necesito coordinar acompañamiento para mi mamá Elena.'],['me','Claro, ¿sería para los días de semana?'],['them','Sí, idealmente de lunes a viernes durante la mañana.'],['me','Tengo disponibilidad en ese horario. ¡Lo podemos coordinar!'],['them','Muchas gracias, quedamos atentas.']]},
+ {familyName:'Roberto Pinto', senior:'Rosa González', caregiver:'Daniela Muñoz', time:'Lun',
+  messages:[['them','Buenas tardes. Mi tía Rosa necesita apoyo para movilizarse y realizar algunas actividades en casa.'],['me','Buenas tardes, Roberto. ¿Qué días requieren el servicio?'],['them','Principalmente lunes, miércoles y viernes.'],['me','Gracias por la información. Revisemos los horarios y detalles.'],['them','¿Tienes disponibilidad el sábado?']]},
+ {familyName:'Patricia Silva', senior:'Marta Silva', caregiver:'Paula Herrera', time:'Mar',
+  messages:[['them','Hola, estoy consultando por acompañamiento para mi mamá Marta.'],['me','¡Hola! Cuéntame qué tipo de apoyo necesita.'],['them','Compañía y ayuda en algunas actividades del hogar por las tardes.'],['me','Entendido. Podemos revisar si los horarios nos acomodan a ambas.'],['them','Te envío los horarios que conversamos.']]}
+];
+// La conversación se adapta al rol: "me" siempre representa al usuario actual.
+let chatSessions = {};
+function escapeChatText(value){
+ return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function getChatMessages(index){
+ const key=currentRole+':'+index;
+ if(!chatSessions[key]){
+   const source=chatExamples[index].messages;
+   chatSessions[key]=source.map(([who,msg])=>[currentRole==='family'?(who==='me'?'them':'me'):who,msg]);
+ }
+ return chatSessions[key];
+}
+function chatDisplayData(){
+ const isFamily=currentRole==='family';
+ return chatExamples.map((c,i)=>{
+   const person=isFamily?c.caregiver:c.familyName;
+   const messages=getChatMessages(i);
+   const lastMessage=messages[messages.length-1]?.[1]||'Sin mensajes todavía';
+   return {name:person,context:c.senior,preview:lastMessage,time:c.time,messages};
+ });
+}
+function renderIdentityScreen(){
+ const isFamily=currentRole==='family';
+ const p=createdFamilyProfile;
+ const holder=isFamily?(p.registerType==='relative'&&p.contactName?p.contactName:p.name):createdCaregiverProfile.name;
+ const body=isFamily?`<p class="t-sec" style="margin-bottom:16px;">Datos de identificación del responsable de la cuenta. Verificación simulada: no adjuntes documentos reales.</p>
+ <div class="field"><label>Responsable de la cuenta</label><input value="${escapeChatText(holder)}" readonly></div>
+ <div class="upload-row"><span class="t-body">📄 Cédula de identidad del responsable</span><span class="chip chip-pending">Simulado</span></div>
+ <div class="field"><label>Teléfono de contacto</label><input value="${escapeChatText(p.phone||'No indicado')}" readonly></div>
+ <div class="field"><label>Persona mayor que recibirá apoyo</label><input value="${escapeChatText(p.name)}" readonly></div>
+ <p class="t-sec">${p.registerType==='relative'?'Registro realizado por un familiar o responsable.':'Registro realizado por la persona mayor.'}</p>`:
+ `<p class="t-sec" style="margin-bottom:16px;">Constancias de formación y acreditación representadas con datos ficticios.</p>
+ <div class="upload-row"><span class="t-body">📄 Cédula de identidad</span><span class="chip chip-pending">Simulado</span></div>
+ <div class="upload-row"><span class="t-body">🎓 Formación / certificado</span><span class="chip chip-pending">En revisión (demo)</span></div>
+ <div class="upload-row"><span class="t-body">🩹 Primeros auxilios</span><span class="chip chip-pending">Pendiente (demo)</span></div>`;
+ document.getElementById('phoneScreen').innerHTML=`<div class="statusbar"></div><div class="screen-body"><div class="screen-header"><div class="back-btn" onclick="goto('${isFamily?'register-family':'register-caregiver'}')">←</div><div class="t-h1">Verifica tu identidad</div></div>${body}<button class="btn btn-primary" style="margin-top:16px;" onclick="goto('login')">Finalizar registro</button></div>`;
+ document.getElementById('crumb').textContent='Pantalla actual: Identidad · '+(isFamily?'Demandante':'Cuidador/a');
+}
+function accountHolderName(){return currentRole==='family'?(createdFamilyProfile.registerType==='relative'&&createdFamilyProfile.contactName?createdFamilyProfile.contactName:createdFamilyProfile.name):createdCaregiverProfile.name;}
+function renderChatList(){
+ const data=chatDisplayData();
+ const matchedRows=Object.entries(chatSessions).filter(([key])=>key.startsWith('matched:'+currentRole+':')).map(([key,messages])=>{
+  const idx=Number(key.split(':')[2]);
+  const p=matchingProfiles[currentRole][idx];if(!p)return '';
+  const senior=currentRole==='family'?createdFamilyProfile.name:p.name;
+  const contact=currentRole==='family'?p.name:getFamilyContact(p).name;
+  const preview=messages[messages.length-1]?.[1]||'Conversación iniciada';
+  const initials=contact.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();
+  return `<div class="list-row" onclick="openMatchedChatAt(${idx})"><div class="avatar-sm">${escapeChatText(initials)}</div><div style="flex:1;min-width:0;"><p class="list-title">${escapeChatText(contact)}</p><p class="list-sub">${escapeChatText(senior)} · ${escapeChatText(preview)}</p></div></div>`;
+ }).join('');
+ const rows=data.map((c,i)=>{
+   const initials=c.name.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();
+   return `<div class="list-row" onclick="openChat(${i})"><div class="avatar-sm">${escapeChatText(initials)}</div><div style="flex:1;min-width:0;"><p class="list-title">${escapeChatText(c.name)}</p><p class="list-sub">${escapeChatText(c.context)} · ${escapeChatText(c.preview)}</p></div><span class="t-sec">${escapeChatText(c.time)}</span></div>`;
+ }).join('');
+ const phone=document.getElementById('phoneScreen');
+ phone.innerHTML=`<div class="statusbar"></div>${topAppBar('chat-list')}<div class="screen-body"><div class="t-h1">Chats</div><p class="t-sec" style="margin-bottom:12px;">Conversaciones de demostración vinculadas a perfiles de CuidaConect.</p>${matchedRows}${rows}</div>${bottomNav('chat-list')}`;
+ document.getElementById('crumb').textContent='Pantalla actual: Lista de chats';
+ document.querySelectorAll('.rail-item').forEach(b=>b.classList.toggle('current',b.dataset.id==='chat-list'));
+}
+
+function openMatchedChatAt(index){if(currentRole==='family')selectedCaregiverIndex=index;else selectedFamilyIndex=index;openMatchedChat();}
+function openChat(index){activeChatMode='list';activeChatIndex=index;renderChatConversation();}
+function openMatchedChat(){
+ activeChatMode='matched';
+ const isFamily=currentRole==='family';
+ const profile=getMatchedProfile();
+ const seniorName=isFamily?(createdFamilyProfile.name||'la persona mayor'):(profile.name||'la persona mayor');
+ const caregiverName=isFamily?profile.name:(createdCaregiverProfile.name||'Cuidador/a');
+ const contact=isFamily?null:getFamilyContact(profile);
+ const contactName=isFamily?caregiverName:contact.name;
+ const contactRelation=isFamily?'Cuidador/a':contact.relation;
+ const key=`matched:${currentRole}:${isFamily?selectedCaregiverIndex:selectedFamilyIndex}`;
+ if(!chatSessions[key]){
+   if(isFamily){
+     chatSessions[key]=[
+       ['them',`Hola, soy ${caregiverName}. Gracias por revisar mi perfil. ¿Qué apoyo necesita ${seniorName} en relación con ${createdFamilyProfile.needs||'sus actividades cotidianas'}?`],
+       ['me',`Hola, soy ${accountHolderName()}. ${accountHolderName()===seniorName?'Necesito apoyo en mis actividades diarias.':`Estoy coordinando apoyo para ${seniorName}.`} Me gustaría revisar días y horarios.`],
+       ['them',`Claro. Podemos revisar la disponibilidad y acordar un horario que nos acomode.`]
+     ];
+   }else{
+     chatSessions[key]=[
+       ['them',`Hola, soy ${contactName}, ${contactRelation.toLowerCase()} de ${seniorName}. Estamos buscando apoyo según lo indicado en su perfil.`],
+       ['me',`Hola ${contactName}, gracias por contactarme. Revisé las necesidades de ${seniorName} y me gustaría conversar sobre los horarios.`],
+       ['them',`Perfecto. ¿Qué días y en qué horario tendrías disponibilidad?`]
+     ];
+   }
+ }
+ activeMatchedChatMessages=chatSessions[key];
+ activeMatchedChatTitle=contactName;
+ activeMatchedChatContext=isFamily?`Cuenta: ${accountHolderName()} · Apoyo para ${seniorName}`:`${contactRelation} de ${seniorName}`;
+ renderChatConversation();
+}
+let activeMatchedChatTitle='';
+let activeMatchedChatContext='';
+let activeBooking = null;
+let confirmedBookings = [];
+let evaluationTarget = null;
+let chosenRating = 0;
+const demoHistory = [
+ {senior:'Ignacio Cortés',caregiver:'Valeria Tapia',date:'2026-10-14',start:'09:00',end:'13:00',status:'Finalizado',rating:null},
+ {senior:'Marta Silva',caregiver:'Paula Herrera',date:'2026-10-20',start:'10:00',end:'14:00',status:'Finalizado',rating:5}
+];
+function fmtDate(date){return new Date(date+'T12:00:00').toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'});}
+function renderAgendaScreen(){
+ const bookings=[...confirmedBookings.map((b,i)=>({...b,idx:i,source:'current'})),...demoHistory.map((b,i)=>({...b,idx:i,source:'history'}))];
+ const cards=bookings.map(b=>{
+  const done=b.status==='Finalizado'||b.status==='Calificado';
+  const status=b.status==='Pendiente'?'ESPERANDO APROBACIÓN DE LA SOLICITUD':b.status.toUpperCase();
+  const button=done?(b.rating?`<span class="badge badge-ok">Evaluación: ${b.rating}/5 ★</span>`:`<button class="btn btn-secondary" style="margin-top:10px;" onclick="openEvaluation('${b.source}',${b.idx})">Calificar servicio</button>`):b.status==='Aprobado'?`<button class="btn btn-secondary" style="margin-top:10px;" onclick="finishBooking(${b.idx})">Marcar como finalizado (simulación)</button>`:b.source==='current'?`<button class="btn btn-secondary" style="margin-top:10px;" onclick="approveBooking(${b.idx})">Simular aprobación</button>`:'';
+  return `<div class="agenda-card"><div class="agenda-date">${escapeChatText(fmtDate(b.date))} · ${escapeChatText(b.start)}–${escapeChatText(b.end)}</div><div class="t-h2">${escapeChatText(b.senior)}</div><div class="t-sec">Cuidador/a: ${escapeChatText(b.caregiver)}</div>${b.notes?`<div class="t-sec">${escapeChatText(b.notes)}</div>`:''}<p style="font-weight:700;margin:10px 0;color:var(--accent)">${escapeChatText(status)}</p>${button}</div>`;
+ }).join('');
+ document.getElementById('phoneScreen').innerHTML=`<div class="statusbar"></div>${topAppBar('agenda')}<div class="screen-body"><div class="t-h1">Mi agenda</div><p class="t-sec" style="margin-bottom:12px;">Solicitudes y servicios de demostración</p>${cards}</div>${bottomNav('agenda')}`;
+ document.getElementById('crumb').textContent='Pantalla actual: Mi agenda';
+}
+function approveBooking(i){if(confirmedBookings[i]){confirmedBookings[i].status='Aprobado';renderAgendaScreen();}}
+function finishBooking(i){if(confirmedBookings[i]){confirmedBookings[i].status='Finalizado';renderAgendaScreen();}}
+function openEvaluation(source,i){evaluationTarget={source,i};chosenRating=0;const b=source==='history'?demoHistory[i]:confirmedBookings[i];
+ document.getElementById('phoneScreen').innerHTML=`<div class="statusbar"></div><div class="screen-body"><div class="screen-header"><div class="back-btn" onclick="renderAgendaScreen()">←</div><div class="t-h1">Calificar servicio</div></div><p class="t-sec">${escapeChatText(b.senior)} · ${escapeChatText(b.caregiver)}</p><p class="t-body">Selecciona de 1 a 5 estrellas.</p><div id="ratingStars" style="display:flex;justify-content:center;gap:6px;margin:20px 0;">${[1,2,3,4,5].map(n=>`<button id="rating-${n}" onclick="chooseRating(${n})" style="font-size:31px;color:#9ba8b3;border:0;background:none;padding:3px;">★</button>`).join('')}</div><div class="field"><label>Comentario (opcional)</label><textarea id="ratingComment" rows="3" placeholder="¿Cómo fue el servicio?"></textarea></div><button class="btn btn-accent" onclick="submitRating()">Enviar evaluación</button></div>`;
+}
+function chooseRating(n){chosenRating=n;for(let i=1;i<=5;i++){const el=document.getElementById('rating-'+i);if(el)el.style.color=i<=n?'#e8ad25':'#9ba8b3';}}
+function submitRating(){if(!evaluationTarget||!chosenRating){alert('Selecciona una calificación.');return;}const b=evaluationTarget.source==='history'?demoHistory[evaluationTarget.i]:confirmedBookings[evaluationTarget.i];b.rating=chosenRating;b.review=document.getElementById('ratingComment').value.trim();b.status='Calificado';renderAgendaScreen();}
+
+function getMatchedProfile(){
+ const isFamily=currentRole==='family';
+ return isFamily
+   ? (matchingProfiles.family[selectedCaregiverIndex]||matchingProfiles.family[0])
+   : (matchingProfiles.caregiver[selectedFamilyIndex]||matchingProfiles.caregiver[0]);
+}
+function getFamilyContact(profile){
+ if(profile.contactName) return {name:profile.contactName,relation:profile.contactRelation||'Familiar'};
+ const senior=profile.name||'Persona mayor';
+ const parts=senior.trim().split(/\\s+/);
+ const surname=parts.length>1?parts.slice(1).join(' '):'';
+ return {name:(currentRole==='caregiver'?'Familiar de ':'')+(surname?'Familia '+surname:'Familiar responsable'),relation:'Familiar responsable'};
+}
+function startBooking(){
+ const isFamily=currentRole==='family';
+ const profile=getMatchedProfile();
+ const senior=isFamily?(createdFamilyProfile.name||'Persona mayor'):(profile.name||'Persona mayor');
+ const caregiver=isFamily?profile.name:(createdCaregiverProfile.name||'Cuidador/a');
+ const contact=isFamily?null:getFamilyContact(profile);
+ activeBooking={senior,caregiver,contact:contact?.name||'',profileIndex:isFamily?selectedCaregiverIndex:selectedFamilyIndex};
+ renderBookingScreen();
+}
+function renderBookingScreen(){
+ const b=activeBooking||{senior:'Persona mayor',caregiver:'Cuidador/a',contact:''};
+ const phone=document.getElementById('phoneScreen');
+ const now=new Date();const minDate=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+ phone.innerHTML=`<div class="statusbar"></div><div class="screen-body">
+ <div class="screen-header"><div class="back-btn" onclick="renderChatConversation()">←</div><div class="t-h1">Coordinar / agendar turno</div></div>
+ <p class="t-sec">Selecciona una fecha y horario específico para solicitar el servicio.</p>
+ <div class="agenda-card" style="margin:14px 0;"><div class="t-h2">${escapeChatText(b.senior)}</div><div class="t-sec">Persona mayor</div><div class="t-h2" style="margin-top:8px;">${escapeChatText(b.caregiver)}</div><div class="t-sec">Cuidador/a</div>${b.contact?`<div class="t-sec" style="margin-top:6px;">Contacto familiar: ${escapeChatText(b.contact)}</div>`:''}</div>
+ <div id="bookingForm">
+ <div class="field"><label for="bookingDate">Día del servicio</label><input id="bookingDate" type="date" min="${minDate}" value="${minDate}"></div>
+ <div class="field"><label for="bookingStart">Hora de inicio</label><input id="bookingStart" type="time" value="09:00"></div>
+ <div class="field"><label for="bookingEnd">Hora de término</label><input id="bookingEnd" type="time" value="13:00"></div>
+ <div class="field"><label for="bookingNotes">Detalles adicionales (opcional)</label><input id="bookingNotes" type="text" maxlength="180" placeholder="Ej.: acompañamiento y preparación de alimentos"></div>
+ <button class="btn btn-accent" type="button" onclick="confirmBooking()">Enviar solicitud de turno</button>
+ </div>
+ <div id="bookingFeedback" style="margin-top:12px;"></div>
+ </div>`;
+ document.getElementById('crumb').textContent='Pantalla actual: Agendamiento';
+}
+function confirmBooking(){
+ const dateEl=document.getElementById('bookingDate');
+ const startEl=document.getElementById('bookingStart');
+ const endEl=document.getElementById('bookingEnd');
+ const noteEl=document.getElementById('bookingNotes');
+ const feedback=document.getElementById('bookingFeedback');
+ if(!dateEl||!startEl||!endEl||!activeBooking){
+   if(feedback)feedback.textContent='No se pudo recuperar el formulario. Vuelve al chat e inténtalo de nuevo.';
+   return;
+ }
+ const date=dateEl.value,start=startEl.value,end=endEl.value,notes=noteEl?.value.trim()||'';
+ if(!date||!start||!end){
+   if(feedback)feedback.textContent='Selecciona el día, la hora de inicio y la hora de término.';
+   return;
+ }
+ if(end<=start){
+   if(feedback)feedback.textContent='La hora de término debe ser posterior a la hora de inicio.';
+   return;
+ }
+ confirmedBookings.unshift({...activeBooking,date,start,end,notes,status:'Pendiente'});
+ renderAgendaScreen();
+}
+
+
+function renderChatConversation(){
+ let c;
+ if(activeChatMode==='matched'){
+   c={name:activeMatchedChatTitle,context:activeMatchedChatContext,messages:activeMatchedChatMessages};
+ }else{
+   c=chatDisplayData()[activeChatIndex]||chatDisplayData()[0];
+ }
+ const bubbles=c.messages.map(([who,msg])=>`<div class="bubble ${who==='me'?'bubble-me':'bubble-them'}">${escapeChatText(msg)}</div>`).join('');
+ const phone=document.getElementById('phoneScreen');
+ phone.innerHTML=`<div class="statusbar"></div><div class="screen-header" style="padding:12px 18px 0;"><div class="back-btn" onclick="${activeChatMode==='matched'?(currentRole==='family'?"renderCaregiverProfile()":"renderFamilyProfile()") : "goto('chat-list')"}">←</div><div style="min-width:0;"><div class="t-h2">${escapeChatText(c.name)}</div><div class="t-sec" style="font-size:11px;">${escapeChatText(accountHolderName())} · ${escapeChatText(c.context)}</div></div></div><div class="screen-body" id="chatMessageArea" style="display:flex;flex-direction:column;">${bubbles}<div style="margin-top:20px;"><button class="btn btn-accent" onclick="startBooking()">Coordinar / agendar turno</button></div></div><form class="chat-composer" onsubmit="sendChatMessage(event)"><input id="chatMessageInput" type="text" maxlength="500" placeholder="Escribe un mensaje..." autocomplete="off" aria-label="Escribe un mensaje"><button type="submit" aria-label="Enviar mensaje">Enviar</button></form>`;
+ const area=document.getElementById('chatMessageArea');
+ area.scrollTop=area.scrollHeight;
+ document.getElementById('crumb').textContent='Pantalla actual: Conversación · '+c.name;
+ document.querySelectorAll('.rail-item').forEach(b=>b.classList.toggle('current',b.dataset.id==='chat-conversation'));
+}
+function sendChatMessage(event){
+ event.preventDefault();
+ const input=document.getElementById('chatMessageInput');
+ const message=input?.value.trim();
+ if(!message)return;
+ if(activeChatMode==='matched'){
+   activeMatchedChatMessages.push(['me',message]);
+ }else{
+   getChatMessages(activeChatIndex).push(['me',message]);
+ }
+ renderChatConversation();
+ const area=document.getElementById('chatMessageArea');if(area)area.scrollTop=area.scrollHeight;
+ const nextInput=document.getElementById('chatMessageInput');
+ if(nextInput){nextInput.value='';nextInput.focus();}
+}
+function renderMatchingFeed(){
+ const family=currentRole==='family', profiles=matchingProfiles[currentRole], phone=document.getElementById('phoneScreen');
+ document.getElementById('crumb').textContent='Pantalla actual: '+(family?'Matching · Cuidadores disponibles':'Matching · Personas mayores');
+ if(matchingIndex>=profiles.length){phone.innerHTML=`<div class="statusbar"></div>${topAppBar('matching-feed')}<div class="screen-body"><div class="matching-empty"><div class="empty-emoji">🔎</div><div class="t-h2">Has revisado todos los perfiles</div><p class="t-sec">Puedes volver a revisar los perfiles de esta selección.</p><button class="btn btn-primary" style="margin-top:18px" onclick="restartMatching()">Volver a revisar</button></div></div>`;return;}
+ const p=profiles[matchingIndex], tags=p.tags.map(t=>`<span class="matching-label">${t}</span>`).join('');
+ phone.innerHTML=`<div class="statusbar"></div>${topAppBar('matching-feed')}<div class="screen-body" style="padding-top:12px"><div class="matching-intro"><div class="t-h1">${family?'Personas cuidadoras disponibles':'Personas mayores que buscan apoyo'}</div><p class="t-sec">${family?'Explora perfiles de cuidadores y cuidadoras para encontrar apoyo para tu familiar.':'Explora solicitudes de familias que buscan apoyo para una persona mayor.'}</p></div><div class="matching-counter"><span>Perfil ${matchingIndex+1} de ${profiles.length}</span><span>${p.distance}</span></div><div class="matching-progress"><span style="width:${(matchingIndex+1)/profiles.length*100}%"></span></div><div class="matching-card" id="activeMatchingCard" ontouchstart="startSwipe(event)" ontouchend="endSwipe(event)" onmousedown="startSwipe(event)" onmouseup="endSwipe(event)"><div class="matching-visual"><div class="matching-initials">${p.initials}</div></div><div class="matching-details"><div class="t-h2">${p.name}</div><div class="matching-meta">${p.subtitle}</div><div class="matching-meta">${p.rate}</div><div style="margin:10px 0 7px">${tags}</div><p class="t-body" style="font-size:13px;color:var(--text-secondary);margin:8px 0 0">${p.about}</p></div></div><div class="matching-actions"><button class="round-btn reject" aria-label="Descartar perfil" onclick="swipeProfile('left')">✕</button><button class="round-btn accept" aria-label="Mostrar interés" onclick="swipeProfile('right')">♥</button></div><p class="matching-hint">Desliza a la izquierda para descartar o a la derecha para mostrar interés.</p></div>`;
+ document.querySelectorAll('.rail-item').forEach(b=>b.classList.toggle('current',b.dataset.id==='matching-feed'));
+}
+function startSwipe(e){swipeStartX=e.type==='touchstart'?e.touches[0].clientX:e.clientX;}
+function endSwipe(e){if(swipeStartX===null)return;const x=e.type==='touchend'?e.changedTouches[0].clientX:e.clientX,delta=x-swipeStartX;swipeStartX=null;if(Math.abs(delta)>55)swipeProfile(delta>0?'right':'left');}
+function swipeProfile(direction){
+ const card=document.getElementById('activeMatchingCard');
+ if(!card)return;
+ // Guardar el índice exacto del perfil que recibió el interés.
+ // Así la pantalla de detalle abre a la persona seleccionada y no siempre el primer registro.
+ if(direction==='right'){
+   if(currentRole==='family') selectedCaregiverIndex=matchingIndex;
+   else selectedFamilyIndex=matchingIndex;
+ }
+ card.classList.add(direction==='right'?'swipe-right':'swipe-left');
+ setTimeout(()=>{
+   if(direction==='right'){goto('match-success');}
+   else{matchingIndex++;renderMatchingFeed();}
+ },160);
+}
+function restartMatching(){matchingIndex=0;renderMatchingFeed();}
+
+
+// Datos editables de los perfiles registrados en esta sesión del prototipo.
+let createdFamilyProfile = {
+  name:'Ignacio Cortés', registerType:'self', contactName:'', phone:'', needs:'Demencia senil, dependencia alta',
+  location:'Peñalolén, Santiago', budget:'$60.000 CLP'
+};
+let createdCaregiverProfile = {
+  name:'Valeria Tapia', rut:'12.345.678-9',
+  training:'TENS especializada', experience:'$5.000 CLP · 5 años'
+};
+let selectedCaregiverIndex = 0;
+let selectedFamilyIndex = 0;
+
+function fieldValue(id, fallback){
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : fallback;
+}
+function saveFamilyProfile(){
+  createdFamilyProfile = {
+    name:fieldValue('family-name','Ignacio Cortés'),
+    registerType:document.getElementById('family-register-type')?.value||'self',
+    contactName:fieldValue('family-contact-name',''),
+    phone:fieldValue('family-phone',''),
+    needs:fieldValue('family-needs','Apoyo y acompañamiento'),
+    location:fieldValue('family-location','Santiago'),
+    budget:fieldValue('family-budget','No especificado')
+  };
+  matchingProfiles.caregiver[0] = {
+    name:createdFamilyProfile.name,
+    initials:createdFamilyProfile.name.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase(),
+    subtitle:'Persona mayor · ' + createdFamilyProfile.location,
+    distance:'Perfil registrado',
+    rate:createdFamilyProfile.budget,
+    tags:['Busca apoyo','Acompañamiento','Cuidado domiciliario'],
+    about:createdFamilyProfile.needs
+  };
+}
+function saveCaregiverProfile(){
+  createdCaregiverProfile = {
+    name:fieldValue('caregiver-name','Valeria Tapia'),
+    rut:fieldValue('caregiver-rut','12.345.678-9'),
+    training:fieldValue('caregiver-training','Cuidador/a'),
+    experience:fieldValue('caregiver-experience','Experiencia no especificada')
+  };
+  matchingProfiles.family[0] = {
+    name:createdCaregiverProfile.name,
+    initials:createdCaregiverProfile.name.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase(),
+    subtitle:createdCaregiverProfile.training,
+    distance:'Perfil registrado',
+    rate:createdCaregiverProfile.experience,
+    tags:['Perfil registrado','Cuidados domiciliarios','Disponibilidad por coordinar'],
+    about:'Perfil creado en este prototipo. ' + createdCaregiverProfile.training + '.'
+  };
+}
+function renderCaregiverProfile(){
+  const p = currentRole === 'caregiver'
+    ? createdCaregiverProfile
+    : (matchingProfiles.family[selectedCaregiverIndex] || matchingProfiles.family[0]);
+  const own = currentRole === 'caregiver';
+  const name = p.name || 'Cuidador/a';
+  const training = p.training || p.subtitle || 'Formación no especificada';
+  const experience = p.experience || p.rate || 'Experiencia no especificada';
+  const content = `<div class="screen-header"><div class="back-btn" onclick="goto('matching-feed')">←</div><div class="t-h1">Perfil de cuidador/a</div></div>
+    <div style="display:flex;justify-content:center;margin:12px 0;"><div class="avatar-sm" style="width:76px;height:76px;font-size:24px;">${name.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase()}</div></div>
+    <div style="text-align:center;"><div class="t-h2">${name}</div><div class="t-sec">${training}</div><div class="t-data" style="margin-top:6px;">${experience}</div></div>
+    <div style="margin:16px 0;"><span class="badge badge-ok">Perfil de demostración</span></div>
+    <div class="t-h2">Sobre el perfil</div><p class="t-body" style="color:var(--text-secondary);">${p.about || 'Información de perfil de cuidador/a.'}</p>
+    <button class="btn btn-accent" onclick="${own?"goto('chat-conversation')":"openMatchedChat()"}">${own?'Volver a la conversación':'Coordinar servicio'}</button>`;
+  document.getElementById('phoneScreen').innerHTML = `<div class="statusbar"></div><div class="screen-body">${content}</div>`;
+  document.getElementById('crumb').textContent = 'Pantalla actual: Perfil · ' + name;
+}
+function renderFamilyProfile(){
+  const p = currentRole === 'family'
+    ? createdFamilyProfile
+    : (matchingProfiles.caregiver[selectedFamilyIndex] || matchingProfiles.caregiver[0]);
+  const name = p.name || 'Persona mayor';
+  const location = p.location || p.subtitle || 'Ubicación no especificada';
+  const needs = p.needs || p.about || 'Acompañamiento y apoyo en actividades cotidianas.';
+  const schedule = p.schedule || p.rate || 'Por coordinar con la familia';
+  const tags = (p.tags || []).map(t=>`<span class="matching-label">${t}</span>`).join('');
+  const content = `<div class="screen-header"><div class="back-btn" onclick="goto('matching-feed')">←</div><div class="t-h1">Perfil de persona mayor</div></div>
+    <div style="display:flex;justify-content:center;margin:12px 0;"><div class="avatar-sm" style="width:76px;height:76px;font-size:24px;">${name.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase()}</div></div>
+    <div style="text-align:center;"><div class="t-h2">${name}</div><div class="t-sec">${location}${p.subtitle && p.location ? ' · '+p.subtitle.split('·')[0].trim() : ''}</div></div>
+    <div style="margin:16px 0;"><span class="badge badge-health">Perfil de demostración</span></div>
+    <div class="field"><label>Necesidades de apoyo</label><div class="t-body">${needs}</div></div>
+    <div class="field"><label>Horario / modalidad</label><div class="t-body">${schedule}</div></div>
+    <div style="margin:8px 0 16px;">${tags}</div>
+    <button class="btn btn-accent" onclick="openMatchedChat()">Contactar familia</button>`;
+  document.getElementById('phoneScreen').innerHTML = `<div class="statusbar"></div><div class="screen-body">${content}</div>`;
+  document.getElementById('crumb').textContent = 'Pantalla actual: Perfil · ' + name;
+}
+
 const screens = {
 'role-select': { crumb:'Selección de perfil', body:`
     <div class="t-display" style="margin-bottom:6px;">Únete a CuidaConect</div>
     <p class="t-sec" style="margin-bottom:22px;">Selecciona tu perfil para iniciar el registro</p>
-    <div class="role-card" onclick="goto('register-family')">
+    <div class="role-card" onclick="selectRole('family')">
       <div class="role-emoji">🏠</div>
       <div><div class="t-h2">Busco cuidador</div><div class="t-sec">Perfil Demandante / Familiar</div></div>
     </div>
-    <div class="role-card" onclick="goto('register-caregiver')">
+    <div class="role-card" onclick="selectRole('caregiver')">
       <div class="role-emoji">🩺</div>
       <div><div class="t-h2">Ofrezco cuidado</div><div class="t-sec">Perfil Técnico / Oferente</div></div>
     </div>
     <p class="t-sec" style="text-align:center;margin-top:26px;">¿Ya tienes cuenta? <a href="#" onclick="goto('login');return false;" style="color:var(--primary);font-weight:600;">Inicia sesión</a></p>`},
 'register-family': { crumb:'Registro · Familia', body:`
     <div class="screen-header"><div class="back-btn" onclick="goto('role-select')">←</div><div class="t-h1">Cuéntanos de tu familiar</div></div>
-    <div class="field"><label>Nombre del paciente</label><input value="Ignacio Cortés"></div>
-    <div class="field"><label>Diagnóstico / condición</label><input value="Demencia senil, dependencia alta"></div>
-    <div class="field"><label>Comuna</label><input value="Peñalolén, Santiago"></div>
-    <div class="field"><label>Presupuesto sugerido / día</label><input value="$60.000 CLP"></div>
-    <button class="btn btn-primary" onclick="goto('upload-docs')">Siguiente</button>`},
+    <div class="field"><label>Nombre de la persona mayor</label><input id="family-name" value="Ignacio Cortés"></div>
+    <div class="field"><label>¿Quién realiza el registro?</label><select id="family-register-type"><option value="self">La propia persona mayor</option><option value="relative">Un familiar o responsable</option></select></div>
+    <div class="field"><label>Nombre del familiar o responsable (si corresponde)</label><input id="family-contact-name" placeholder="Ej.: Cecilia Cortés"></div>
+    <div class="field"><label>Teléfono de contacto (demostración)</label><input id="family-phone" placeholder="Ej.: +56 9 1234 5678"></div>
+    <div class="field"><label>Diagnóstico / condición</label><input id="family-needs" value="Demencia senil, dependencia alta"></div>
+    <div class="field"><label>Comuna</label><input id="family-location" value="Peñalolén, Santiago"></div>
+    <div class="field"><label>Presupuesto sugerido / día</label><input id="family-budget" value="$60.000 CLP"></div>
+    <button class="btn btn-primary" onclick="saveFamilyProfile();goto('upload-docs')">Siguiente</button>`},
 'register-caregiver': { crumb:'Registro · Cuidador', body:`
     <div class="screen-header"><div class="back-btn" onclick="goto('role-select')">←</div><div class="t-h1">Cuéntanos sobre ti</div></div>
-    <div class="field"><label>Nombre completo</label><input value="Valeria Tapia"></div>
-    <div class="field"><label>RUT</label><input value="12.345.678-9"></div>
-    <div class="field"><label>Formación</label><input value="TENS especializada"></div>
-    <div class="field"><label>Tarifa hora / experiencia</label><input value="$5.000 CLP · 5 años"></div>
-    <button class="btn btn-primary" onclick="goto('upload-docs')">Siguiente</button>`},
+    <div class="field"><label>Nombre completo</label><input id="caregiver-name" value="Valeria Tapia"></div>
+    <div class="field"><label>RUT</label><input id="caregiver-rut" value="12.345.678-9"></div>
+    <div class="field"><label>Formación</label><input id="caregiver-training" value="TENS especializada"></div>
+    <div class="field"><label>Tarifa hora / experiencia</label><input id="caregiver-experience" value="$5.000 CLP · 5 años"></div>
+    <button class="btn btn-primary" onclick="saveCaregiverProfile();goto('upload-docs')">Siguiente</button>`},
 'upload-docs': { crumb:'Carga de documentos', body:`
     <div class="screen-header"><div class="back-btn" onclick="goto('role-select')">←</div><div class="t-h1">Verifica tu identidad</div></div>
     <p class="t-sec" style="margin-bottom:16px;">Estos documentos se revisan antes de activar tu Anillo de Confianza.</p>
@@ -195,23 +592,8 @@ const screens = {
     <div class="t-h1" style="margin-top:10px;">Verifica tu identidad</div>
     <p class="t-sec">Enviamos un código de 4 dígitos a tu correo por seguridad</p>
     <div class="otp-row"><div class="otp-box filled">4</div><div class="otp-box filled">2</div><div class="otp-box filled">1</div><div class="otp-box filled">7</div></div>
-    <button class="btn btn-primary" onclick="goto('matching-feed')">Verificar</button>`},
-'matching-feed': { crumb:'Feed de Matching', nav:'matching-feed', body:`
-    ${topAppBar('matching-feed')}
-    <div class="screen-body" style="padding-top:14px;">
-      <div class="match-card">
-        <div class="match-photo">VT ${ring(75)}</div>
-        <div class="match-info">
-          <div class="t-h2">Valeria T.</div>
-          <div class="t-sec">A 1.2 km · TENS especializada</div>
-          <div class="match-tags"><span class="tag">Alzheimer</span><span class="tag">Cuidados paliativos</span><span class="tag">Curación de escaras</span></div>
-        </div>
-        <div class="match-actions">
-          <button class="round-btn reject" onclick="goto('matching-empty')">✕</button>
-          <button class="round-btn accept" onclick="goto('match-success')">✓</button>
-        </div>
-      </div>
-    </div>`},
+    <button class="btn btn-primary" onclick="showMatchingSearch()">Verificar</button>`},
+'matching-feed': { crumb:'Matching', body:''},
 'matching-empty': { crumb:'Feed de Matching · vacío', nav:'matching-feed', body:`
     ${topAppBar('matching-feed')}
     <div class="screen-body"><div class="empty-state">
@@ -223,50 +605,16 @@ const screens = {
     <div style="text-align:center;padding-top:50px;">
       <div style="font-size:52px;">🎉</div>
       <div class="t-display" style="color:var(--accent);margin:10px 0 6px;">¡Es un match!</div>
-      <p class="t-sec" style="margin-bottom:24px;">Tú y Valeria T. pueden empezar a coordinar</p>
+      <p class="t-sec" style="margin-bottom:24px;">El interés se ha registrado en este prototipo. Puedes continuar explorando los perfiles.</p>
       <div style="display:flex;justify-content:center;">${ring(75,88).replace('style="width:','style="position:relative;bottom:auto;left:auto;width:')}</div>
       <div style="height:34px;"></div>
-      <button class="btn btn-accent" onclick="goto('profile-caregiver')">Ver perfil completo</button>
-      <button class="btn btn-ghost" onclick="goto('chat-conversation')">Enviar mensaje directo</button>
+      <button class="btn btn-accent" onclick="currentRole==='family'?renderCaregiverProfile():renderFamilyProfile()">Ver perfil completo</button>
+      <button class="btn btn-ghost" onclick="matchingIndex++;goto('matching-feed')">Continuar explorando perfiles</button>
     </div>`},
-'profile-caregiver': { crumb:'Perfil · Cuidador', body:`
-    <div class="screen-header"><div class="back-btn" onclick="goto('matching-feed')">←</div><div class="t-h1">Perfil</div></div>
-    <div style="display:flex;justify-content:center;margin-bottom:10px;">${ring(75,84).replace('style="width:','style="position:relative;bottom:auto;left:auto;width:')}</div>
-    <div style="text-align:center;">
-      <div class="t-h2">Valeria Tapia, 28</div>
-      <div class="t-sec">TENS especializada · 5 años de experiencia</div>
-      <div class="t-data" style="margin-top:4px;">$5.000 CLP / hora</div>
-    </div>
-    <div style="margin:16px 0;">
-      <span class="badge badge-ok">✓ Identidad OK</span><span class="badge badge-ok">✓ Certificados</span><span class="badge badge-pending">⏳ Curso primeros aux.</span>
-    </div>
-    <div class="t-h2" style="margin-top:6px;">Sobre mí</div>
-    <p class="t-body" style="color:var(--text-secondary);">Especialista en pacientes con Alzheimer, cuidados paliativos y curación de escaras. Disponible turnos diurnos.</p>
-    <button class="btn btn-accent" onclick="goto('chat-conversation')">Coordinar servicio</button>`},
-'profile-family': { crumb:'Perfil · Familia / Paciente', body:`
-    <div class="screen-header"><div class="back-btn" onclick="goto('matching-feed')">←</div><div class="t-h1">Ficha del paciente</div></div>
-    <div class="badge badge-health">🩺 Datos protegidos por Ley 21.719 y 19.628</div>
-    <div style="margin-top:14px;"><div class="t-h2">Familia Cortés P.</div><div class="t-sec">Tutor: Cecilia Cortés · Paciente: Ignacio Cortés</div></div>
-    <div class="field" style="margin-top:14px;"><label>Diagnóstico clínico</label><div class="t-body">Masculino (86 años), demencia senil avanzada, dependencia funcional alta</div></div>
-    <div class="field"><label>Ubicación</label><div class="t-body">Peñalolén, Santiago</div></div>
-    <div class="field"><label>Rango horario</label><div class="t-body">Turnos día (8:00–18:00 hrs)</div></div>
-    <div class="field"><label>Presupuesto sugerido</label><div class="t-data">$60.000 CLP/día</div></div>
-    <button class="btn btn-primary" onclick="goto('chat-conversation')">Contactar familia</button>`},
-'chat-list': { crumb:'Lista de chats', nav:'chat-list', body:`
-    ${topAppBar('chat-list')}
-    <div class="screen-body">
-      <div class="t-h1">Chats</div>
-      <div class="list-row" onclick="goto('chat-conversation')"><div class="avatar-sm">CC</div><div style="flex:1;"><p class="list-title">Cecilia Cortés</p><p class="list-sub">Sí, el jueves en la tarde nos acomoda</p></div><span class="t-sec">14:02</span></div>
-      <div class="list-row" onclick="goto('chat-conversation')"><div class="avatar-sm">MJ</div><div style="flex:1;"><p class="list-title">Marisol Jara</p><p class="list-sub">Gracias por el cuidado de ayer 🙏</p></div><span class="t-sec">Ayer</span></div>
-      <div class="list-row" onclick="goto('chat-conversation')"><div class="avatar-sm">RP</div><div style="flex:1;"><p class="list-title">Roberto Pinto</p><p class="list-sub">¿Podríamos coordinar para el sábado?</p></div><span class="t-sec">Lunes</span></div>
-    </div>
-    ${bottomNav('chat-list')}`},
-'chat-conversation': { crumb:'Conversación', body:`
-    <div class="screen-header"><div class="back-btn" onclick="goto('chat-list')">←</div><div class="t-h2">Cecilia Cortés</div></div>
-    <div class="bubble bubble-them">Hola Valeria, vimos tu perfil y calza perfecto con lo que necesitamos para mi papá 🙏</div>
-    <div class="bubble bubble-me">¡Hola! Encantada. ¿Podemos coordinar una videollamada esta semana?</div>
-    <div class="bubble bubble-them">Sí, el jueves en la tarde nos acomoda</div>
-    <div style="margin-top:20px;"><button class="btn btn-accent" onclick="goto('agenda')">Agendar turno</button></div>`},
+'profile-caregiver': { crumb:'Perfil · Cuidador', body:''},
+'profile-family': { crumb:'Perfil · Familia / Paciente', body:''},
+'chat-list': { crumb:'Lista de chats', nav:'chat-list', body:''},
+'chat-conversation': { crumb:'Conversación', body:''},
 'agenda': { crumb:'Agenda / turnos', nav:'agenda', body:`
     ${topAppBar('agenda')}
     <div class="screen-body">
@@ -314,7 +662,23 @@ function closeMenu(){
   if(el) el.remove();
 }
 
+let matchingSearchTimer = null;
+function showMatchingSearch(){
+  if(matchingSearchTimer!==null)clearTimeout(matchingSearchTimer);
+  const phone=document.getElementById('phoneScreen');
+  phone.innerHTML=`<div class="statusbar"></div><div class="screen-body"><div class="match-search-wait" role="status" aria-live="polite"><div class="match-search-icon" aria-hidden="true">🌎<span class="match-search-lens">🔍</span></div><div class="t-h1">Buscando perfiles cercanos a ti...</div><p class="t-sec">Explorando perfiles disponibles en tu zona</p><div class="match-search-dots" aria-hidden="true"><span></span><span></span><span></span></div></div></div>`;
+  document.getElementById('crumb').textContent='Pantalla actual: Buscando perfiles cercanos';
+  matchingSearchTimer=setTimeout(()=>{matchingSearchTimer=null;goto('matching-feed');},2000);
+}
+
 function goto(id){
+  if(matchingSearchTimer!==null){clearTimeout(matchingSearchTimer);matchingSearchTimer=null;}
+  if(id==='chat-list'){renderChatList();return;}
+  if(id==='chat-conversation'){activeChatMode='list';renderChatConversation();return;}
+  if(id==='agenda'){renderAgendaScreen();return;}
+  if(id==='upload-docs'){renderIdentityScreen();return;}
+  if(id==='evaluation'){openEvaluation('history',0);return;}
+  if(id==='matching-feed'){renderMatchingFeed();window.scrollTo({top:0,behavior:'smooth'});return;}
   const s = screens[id];
   const el = document.getElementById('phoneScreen');
   const wrapped = s.nav
