@@ -2,7 +2,7 @@
 
 Prototipo interactivo de alta fidelidad de una aplicación móvil que conecta a familias que requieren cuidado domiciliario para personas mayores con cuidadores que ofrecen este servicio.
 
-Proyecto de Título · Ingeniería en Informática · Universidad Mayor · 2026
+Proyecto de Título · Ingeniería en Informática · Universidad Mayor · 2026.
 Equipo:
 
 - Kevin Bautista – Product Owner
