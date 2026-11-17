@@ -3,7 +3,12 @@
 Prototipo interactivo de alta fidelidad de una aplicación móvil que conecta a familias que requieren cuidado domiciliario para personas mayores con cuidadores que ofrecen este servicio.
 
 Proyecto de Título · Ingeniería en Informática · Universidad Mayor · 2026
-Equipo: Ariel Arredondo (Product Owner), Kevin Bautista, Abdías Garrido, Paola Hidalgo.
+Equipo:
+
+- Kevin Bautista – Product Owner
+- Ariel Arredondo – Scrum Master
+- Abdías Garrido – Desarrollador
+- Paola Hidalgo – Desarrolladora
 
 ## Prototipo publicado
 
@@ -30,7 +35,7 @@ El prototipo utiliza datos ficticios y no está conectado a bases de datos ni a 
 | Versión | Sprint | Descripción |
 |---|---|---|
 | v1 | Sprint 0 | 16 pantallas en 4 módulos (publicada) |
-| v2 | Sprints 1 y 2 | Ajustes por hallazgos de cuestionarios, entrevistas y observaciones de la profesora guía |
+| v2 | Sprints 1 y 2 | Ajustes de UX por hallazgos de cuestionarios, entrevistas y observaciones de la profesora guía (publicada) |
 | v3 | Sprint 3 | Ajustes por resultados de la prueba de usabilidad |
 
 ## Convención de trabajo
